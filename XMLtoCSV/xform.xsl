@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="text"/>
+
+  <xsl:template match="/">
+    <xsl:for-each select="*/*[1]/*">
+      <xsl:value-of select="name()" />
+      <xsl:if test="not(position() = last())">,</xsl:if>
+    </xsl:for-each>
+    <xsl:text>&#10;</xsl:text>
+    <xsl:apply-templates select="*/*" mode="row"/>
+  </xsl:template>
+
+  <xsl:template match="*" mode="row">
+    <xsl:apply-templates select="*" mode="data" />
+    <xsl:text>&#10;</xsl:text>
+  </xsl:template>
+
+  <xsl:template match="*" mode="data">
+    <xsl:choose>
+      <xsl:when test="contains(text(),',')">
+        <xsl:text>&quot;</xsl:text>
+        <xsl:call-template name="doublequotes">
+          <xsl:with-param name="text" select="text()" />
+        </xsl:call-template>
+        <xsl:text>&quot;</xsl:text>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="." />
+      </xsl:otherwise>
+    </xsl:choose>
+    <xsl:if test="position() != last()">,</xsl:if>
+  </xsl:template>
+
+  <xsl:template name="doublequotes">
+    <xsl:param name="text" />
+    <xsl:choose>
+      <xsl:when test="contains($text,'&quot;')">
+        <xsl:value-of select="concat(substring-before($text,'&quot;'),'&quot;&quot;')" />
+        <xsl:call-template name="doublequotes">
+          <xsl:with-param name="text" select="substring-after($text,'&quot;')" />
+        </xsl:call-template>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="$text" />
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+</xsl:stylesheet>

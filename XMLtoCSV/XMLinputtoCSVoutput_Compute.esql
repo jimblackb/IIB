@@ -1,0 +1,52 @@
+
+---------------------------------------------------------------------
+-- Description  : Sample Message Flow for File to File xform XML to CSV using XLST
+-- Author 		: James Blackburn
+-- Marks & Spencer, June 2016
+---------------------------------------------------------------------
+
+-- mainline proc
+CREATE COMPUTE MODULE XMLinputtoCSVoutput_Compute
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		-- standard IBM supplied procs to copy message header and payload
+		CALL CopyMessageHeaders();
+		CALL CopyEntireMessage();
+		
+		CALL setFileName();
+	
+		
+		RETURN TRUE;
+	END;
+
+-- standard procs to copy message payload and headers
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+	
+-- proc to create filename on local machine	
+	CREATE PROCEDURE setFileName() BEGIN
+		--Set FileName using tree from file input node
+		--Set FileName to be same as input file name replacing extension with .csv
+		DECLARE strFileName CHARACTER;
+		SET strFileName = InputLocalEnvironment.File.Name;
+		SET strFileName = SUBSTRING(strFileName BEFORE '.');
+		SET strFileName = strFileName || '.csv';
+		SET OutputLocalEnvironment.Destination.File.Name = strFileName;
+		
+		--Set Output Dir to same as input
+		SET OutputLocalEnvironment.Destination.File.Directory = InputLocalEnvironment.File.Directory;
+		
+	END;
+
+END MODULE;

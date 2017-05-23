@@ -1,0 +1,49 @@
+
+---------------------------------------------------------------------
+-- Description  : Sample Message Flow for HTTP to File, as input for XML File to CSV 
+-- Author 		: James Blackburn
+-- Marks & Spencer, June 2016
+---------------------------------------------------------------------
+
+-- mainline proc
+CREATE COMPUTE MODULE XMLHTTPreply
+	CREATE FUNCTION Main() RETURNS BOOLEAN
+	BEGIN
+		
+			
+		CALL CopyMessageHeaders();
+		-- CALL CopyEntireMessage();
+		
+		CALL CreateHTTPreplyMsg();
+		
+		RETURN TRUE;
+	END;
+
+	CREATE PROCEDURE CopyMessageHeaders() BEGIN
+		DECLARE I INTEGER 1;
+		DECLARE J INTEGER;
+		SET J = CARDINALITY(InputRoot.*[]);
+		WHILE I < J DO
+			SET OutputRoot.*[I] = InputRoot.*[I];
+			SET I = I + 1;
+		END WHILE;
+	END;
+
+	CREATE PROCEDURE CopyEntireMessage() BEGIN
+		SET OutputRoot = InputRoot;
+	END;
+	
+	
+-- procs	
+	CREATE PROCEDURE CreateHTTPreplyMsg() BEGIN
+	
+
+		
+	-- Generate a Simple Response Message from Input Query
+	DECLARE strOutFile CHARACTER;
+	SET strOutFile = ' File ' || InputLocalEnvironment.HTTP.Input.QueryString.file || ' Created on ' || InputLocalEnvironment.HTTP.Input.QueryString.folder || ' Filesystem OK.'; 
+	SET OutputRoot.XMLNSC.Message VALUE = strOutFile;
+	
+	END;
+	
+END MODULE;
